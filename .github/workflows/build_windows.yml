@@ -1,11 +1,16 @@
-name: Build Windows Executable
+name: Build and Release Windows Executable
 
 on:
   workflow_dispatch:  # 允許手動觸發
+  push:
+    tags:
+      - 'v*'  # 當推送 v 開頭的 tag 時觸發 (例如 v1.0.0)
 
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write  # 需要寫入權限來建立 Release
 
     steps:
     - name: Checkout repository
@@ -33,3 +38,13 @@ jobs:
       with:
         name: anime_scraper_windows
         path: dist/anime_scraper.exe
+
+    - name: Create Release and Upload Asset
+      if: startsWith(github.ref, 'refs/tags/')  # 只在有 tag 時執行
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/anime_scraper.exe
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
