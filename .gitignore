@@ -11,3 +11,4 @@ wheels/
 
 logs/*.log
 data/sn_list.txt
+tmp/
