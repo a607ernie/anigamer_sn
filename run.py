@@ -28,27 +28,31 @@ def main():
         
         # 執行流程：
         # 1. 讀取現有的 sn_list.txt 檔案
-        logger.info("步驟 1/6: 讀取現有檔案")
+        logger.info("步驟 1/7: 讀取現有檔案")
         scraper.parse_existing_file()
         
         # 2. 過濾掉一年以前的舊季度資料
-        logger.info("步驟 2/6: 過濾舊季度資料")
+        logger.info("步驟 2/7: 過濾舊季度資料")
         scraper.filter_old_seasons()
         
         # 3. 從網頁抓取新的動畫資料
-        logger.info("步驟 3/6: 抓取網頁資料")
+        logger.info("步驟 3/7: 抓取網頁資料")
         scraper.scrape(pages=args.pages)
         
         # 4. 合併網頁資料與本地資料
-        logger.info("步驟 4/6: 合併資料")
+        logger.info("步驟 4/7: 合併資料")
         scraper.merge_and_process_data()
         
         # 5. 處理重複的動畫名稱（舊的改為註解）
-        logger.info("步驟 5/6: 處理重複項目")
+        logger.info("步驟 5/7: 處理重複項目")
         scraper.process_duplicates()
+
+        # 6. 註解舊季度資料
+        logger.info("步驟 6/7: 註解舊季度資料")
+        scraper.comment_out_old_seasons()
         
-        # 6. 儲存到檔案
-        logger.info("步驟 6/6: 儲存檔案")
+        # 7. 儲存到檔案
+        logger.info("步驟 7/7: 儲存檔案")
         scraper.save()
         
         logger.info("=" * 50)

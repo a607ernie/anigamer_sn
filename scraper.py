@@ -357,6 +357,59 @@ class AnimeScraper:
         
         self.logger.info(f"過濾完成，刪除了 {len(to_remove)} 個舊季度")
 
+    def comment_out_old_seasons(self):
+        """將兩個季度以前的動畫全部註解
+        
+        計算方式：
+        - 使用季度為單位進行計算
+        - 保留最近兩個季度內的資料（包含當前季度）
+        - 註解兩個季度以前（包含）的資料
+        
+        範例：
+        - 當前日期：2026/01/03（2026 Q1）
+        - 兩個季度前：2025/07/09（2025 Q3）
+        - 會註解：2025_0709 及更早的季度
+        """
+        self.logger.info("開始註解舊季度資料...")
+        
+        # 取得系統當前日期
+        now = datetime.now()
+        current_year = now.year
+        current_month = now.month
+        
+        # 計算當前季度總數 (Year * 4 + QuarterIndex)
+        # QuarterIndex: 0 (Q1), 1 (Q2), 2 (Q3), 3 (Q4)
+        current_q_idx = (current_month - 1) // 3
+        current_total_q = current_year * 4 + current_q_idx
+        
+        # 計算截止季度總數 (兩個季度前)
+        # 例如：2026 Q1 (Total 8104) -> 2025 Q3 (Total 8102)
+        # 8104 - 2 = 8102
+        cutoff_total_q = current_total_q - 2
+        
+        # 還原為季度代碼
+        cutoff_year = cutoff_total_q // 4
+        cutoff_q_idx = cutoff_total_q % 4
+        cutoff_month_start = cutoff_q_idx * 3 + 1
+        cutoff_month_end = cutoff_month_start + 2
+        cutoff_season_key = f"{cutoff_year}_{cutoff_month_start:02d}{cutoff_month_end:02d}"
+        
+        self.logger.info(f"當前季度: {self.get_season_key(current_year, current_month)}")
+        self.logger.info(f"註解截止季度: {cutoff_season_key} (含此季度及更早)")
+        
+        commented_count = 0
+        for season in self.data:
+            # 如果季度 <= 截止季度，則進行註解
+            if season <= cutoff_season_key:
+                for entry in self.data[season]:
+                    # 如果有標題且尚未被註解 (line 開頭不是 #)
+                    if entry.get('title') and not entry['line'].strip().startswith('#'):
+                        # 改為註解格式
+                        entry['line'] = f"#{entry['title']}"
+                        commented_count += 1
+        
+        self.logger.info(f"註解完成，共修改 {commented_count} 個項目")
+
     def save(self):
         """將處理完的資料儲存到檔案
         
