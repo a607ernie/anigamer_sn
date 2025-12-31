@@ -1,0 +1,15 @@
+services:
+  anime-scraper:
+    build: .
+    container_name: anime-scraper
+    restart: unless-stopped
+    volumes:
+      # 將 sn_list.txt 掛載出來，持久化資料
+      - ./data:/app/data
+      # 將日誌目錄挂載出來
+      - ./logs:/app/logs
+    environment:
+      # 設定時區為台北時間
+      - TZ=Asia/Taipei
+    # 如果需要手動執行，可以用：
+    # docker-compose exec anime-scraper python3 run.py -p 3
