@@ -33,6 +33,8 @@ class AnimeScraper:
         self.scraped_data = defaultdict(list)
         # 記錄已存在的 SN，用來避免重複
         self.existing_sns = set()
+        # 記錄已經註解的標題，用來避免重新添加
+        self.commented_titles = set()
         # 日誌記錄器
         self.logger = logger or get_logger()
 
@@ -108,6 +110,11 @@ class AnimeScraper:
                         parts = line.split('#', 1)
                         if len(parts) > 1:
                             title = parts[1].strip()
+                    else:
+                        # 檢查是否為註解行（以 # 開頭）
+                        if line.startswith('#'):
+                            title = line[1:].strip()  # 提取標題
+                            self.commented_titles.add(title)  # 記錄已經註解的標題
                     
                     # 如果沒有季度標記，歸類到 "Misc"
                     season_key = current_season if current_season else "Misc"
@@ -220,6 +227,10 @@ class AnimeScraper:
             
             # 6. 將抓取到的資料存入暫存區
             if sn:
+                # 檢查是否已經註解過此標題
+                if title in self.commented_titles:
+                    self.logger.debug(f"已註解標題，跳過: {title} ({sn})")
+                    return False
                 self.logger.info(f"已抓取: {title} ({sn}) -> {season_key}")
                 new_line = f"{sn} all #{title}"  # 格式化為輸出格式
                 self.scraped_data[season_key].append({
